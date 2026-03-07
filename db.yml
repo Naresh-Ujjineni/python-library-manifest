@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: db
-          image: shaikmustafa/flm2026:dbimage
+          image: nareshujjineni/flm0307:dbimage
           ports:
             - containerPort: 3306
