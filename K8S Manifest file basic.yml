@@ -1,0 +1,217 @@
+[root@ip-172-31-2-129 ~]# cat srinu.yml
+# ---------------------------------------------
+# Namespace
+# ---------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nani
+
+---
+
+# ---------------------------------------------
+# Services
+# ---------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: nani
+spec:
+  selector:
+    app: db
+  ports:
+    - port: 3306
+      targetPort: 3306
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: nani
+spec:
+  selector:
+    app: auth
+  ports:
+    - port: 5001
+      targetPort: 5001
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-service
+  namespace: nani
+spec:
+  selector:
+    app: book
+  ports:
+    - port: 5002
+      targetPort: 5002
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: borrow-service
+  namespace: nani
+spec:
+  selector:
+    app: borrow
+  ports:
+    - port: 5003
+      targetPort: 5003
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: nani
+spec:
+  selector:
+    app: frontend
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 5000
+
+---
+
+# ---------------------------------------------
+# StatefulSet : Database
+# ---------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  namespace: nani
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: nareshujjineni/flm0307:dbimage
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/nginx/html/
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+
+# ---------------------------------------------
+# Deployments
+# ---------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: nani
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: nareshujjineni/flm0307:authimage
+          ports:
+            - containerPort: 5001
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book
+  namespace: nani
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: book
+  template:
+    metadata:
+      labels:
+        app: book
+    spec:
+      containers:
+        - name: book
+          image: nareshujjineni/flm0307:bookimage
+          ports:
+            - containerPort: 5002
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: borrow
+  namespace: nani
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: borrow
+  template:
+    metadata:
+      labels:
+        app: borrow
+    spec:
+      containers:
+        - name: borrow
+          image: nareshujjineni/flm0307:borrowimage
+          ports:
+            - containerPort: 5003
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: nani
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: nareshujjineni/flm0307:appimage1
+          ports:
+            - containerPort: 5000
+[root@ip-172-31-2-129 ~]#
