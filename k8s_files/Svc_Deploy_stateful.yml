@@ -234,3 +234,18 @@ spec:
                 name: libapp-config
             - secretRef:
                 name: libapp-sc
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /app/app.py
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 5
