@@ -1,40 +1,4 @@
 # ---------------------------------------------
-# Namespace
-# ---------------------------------------------
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: nani
-
-
-
-
-
-
-# Ingress
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: libapp-ingress
-  namespace: nani
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  ingressClassName: nginx
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend-service
-                port:
-                  number: 80
-
----
-
-# ---------------------------------------------
 # Services
 # ---------------------------------------------
 apiVersion: v1
@@ -131,6 +95,11 @@ spec:
           image: nareshujjineni/flm0307:dbimage
           ports:
             - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: libapp-config
+            - secretRef:
+                name: libapp-sc
           volumeMounts:
             - name: data
               mountPath: /usr/share/nginx/html/
@@ -169,6 +138,28 @@ spec:
           image: nareshujjineni/flm0307:authimage
           ports:
             - containerPort: 5001
+          env:
+            - name: confcon
+              valueFrom:
+                configMapKeyRef:
+                  name: libapp-config
+                  key: NameCon
+            - name: confipl2
+              valueFrom:
+                configMapKeyRef:
+                  name: libapp-config
+                  key: IPL5
+            - name: secrcon
+              valueFrom:
+                secretKeyRef:
+                  name: libapp-sc
+                  key: NameSC
+            - name: secripl
+              valueFrom:
+                secretKeyRef:
+                  name: libapp-sc
+                  key: IPL2
+
 
 ---
 
@@ -238,3 +229,8 @@ spec:
           image: nareshujjineni/flm0307:appimage1
           ports:
             - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: libapp-config
+            - secretRef:
+                name: libapp-sc
