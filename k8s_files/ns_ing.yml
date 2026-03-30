@@ -14,6 +14,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: libapp-ingress
+  namespace: nani
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
