@@ -1,0 +1,165 @@
+[root@ip-172-31-38-164 ~]# cat netpol.yml
+# ---------------------------------------------
+# Network Policy
+# ---------------------------------------------
+# np-deny-all-egress.yml
+# By default no pod can call anywhere.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: nani
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+
+# __________________________________
+# np-allow-dns.yml
+# Without this → services won’t resolve
+# ✅ All pods can talk to kube‑dns only.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: nani
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+# __________________________________
+# frontend-egress-backend.yml
+# ✅ Frontend ➝ Backend (Egress)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-egress-backend
+  namespace: nani
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - auth
+          - book
+          - borrow
+    ports:
+    - protocol: TCP
+      port: 5001
+    - protocol: TCP
+      port: 5002
+    - protocol: TCP
+      port: 5003
+
+# __________________________________
+# backend-ingress-frontend.yml
+# ✅ Backend Ingress (from Frontend)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-ingress-frontend
+  namespace: nani
+spec:
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - auth
+      - book
+      - borrow
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 5001
+    - protocol: TCP
+      port: 5002
+    - protocol: TCP
+      port: 5003
+
+# __________________________________
+# backend-egress-db.yml
+# ✅ Backend ➝ DB (Egress)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-egress-db
+  namespace: nani
+spec:
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - auth
+      - book
+      - borrow
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: db
+    ports:
+    - protocol: TCP
+      port: 3306
+
+# __________________________________
+# db-ingress-backend.yml
+# ✅ DB Ingress (from Backend only)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-ingress-backend
+  namespace: nani
+spec:
+  podSelector:
+    matchLabels:
+      app: db
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - auth
+          - book
+          - borrow
+    ports:
+    - protocol: TCP
+      port: 3306
