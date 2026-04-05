@@ -1,3 +1,4 @@
+
 #15. Resource Quota
 apiVersion: v1
 kind: ResourceQuota
@@ -6,8 +7,8 @@ metadata:
   namespace: nani
 spec:
   hard:
-    requests.cpu: "1"
-    requests.memory: 1Gi
-    limits.cpu: "2"            # Max CPU limits across all pods
-    limits.memory: 2Gi         # Max memory limits across all pods
-    pods: "7"
+    requests.cpu: "2"
+    requests.memory: 2Gi
+    limits.cpu: "4"            # Max CPU limits across all pods
+    limits.memory: 4Gi         # Max memory limits across all pods
+    pods: "24"
